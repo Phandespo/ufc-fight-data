@@ -11,8 +11,7 @@ driver = webdriver.Chrome(options=chrome_options)
 num_url = 'https://www.ufc.com/events#events-list-past'
 driver.get(num_url)
 num_raw = driver.find_element(by='xpath', value='//*[@id="events-list-past"]/div/div/div[1]/div[2]').text
-num_events = int(num_raw.split(' ')[0])
-num_events = 35
+num_events = int(num_raw.split(' ')[0]) + 11
 
 # Begin scraping at UFC 1's webpage
 first_card = 'https://www.ufc.com/event/ufc-1'
@@ -37,9 +36,13 @@ with open('fight_data.csv', mode='w', newline='', encoding='utf-8') as data:
             for index in range(len(driver.find_elements(by='xpath', value=f'//*[@id={section}]/div/section/ul/li'))):
                 red_path = f'//*[@id={section}]/div/section/ul/li[{index}+1]/div/div/div/div[2]/div[2]/div[5]/div[1]'
                 red = driver.find_element(by='xpath', value=red_path).text
+                if red == '':
+                    red = 'N/A'
 
                 blue_path = f'//*[@id={section}]/div/section/ul/li[{index}+1]/div/div/div/div[2]/div[2]/div[5]/div[3]'
                 blue = driver.find_element(by='xpath', value=blue_path).text
+                if blue == '':
+                    blue = 'N/A'
 
                 weight_path = f'//*[@id={section}]/div/section/ul/li[{index}+1]/div/div/div/div[2]/div[2]/div[1]/div[2]'
                 weight = driver.find_element(by='xpath', value=weight_path).text.replace(' BOUT', '')
@@ -132,7 +135,10 @@ with open('fight_data.csv', mode='w', newline='', encoding='utf-8') as data:
         try:
             next_event = driver.find_element(by='xpath', value='//*[@id="block-mainpagecontent"]/div/div[1]/div[2]/div/span[2]/a')
         except NoSuchElementException:
-            next_event = driver.find_element(by='xpath', value='//*[@id="block-mainpagecontent"]/div/div[1]/div[2]/div/span/a')                                        
+            if event == 0:
+                next_event = driver.find_element(by='xpath', value='//*[@id="block-mainpagecontent"]/div/div[1]/div[2]/div/span/a')
+            else:
+                next_event = driver.find_element(by='xpath', value='//*[@id="block-mainpagecontent"]/div/div[1]/div[3]/div/span[2]/a')
         ActionChains(driver).scroll_to_element(next_event).perform()
         next_event.click()
 
